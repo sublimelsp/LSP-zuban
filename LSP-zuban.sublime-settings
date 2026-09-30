@@ -1,0 +1,14 @@
+{
+  // LSP settings
+  "enabled": true,
+  "command": ["zuban", "server"],
+  "selector": "source.python",
+
+  // manual check settings
+  "check": {
+    "cmd": "zuban",
+    "args": [
+      // "--python-version", "3.9",
+    ],
+  }
+}

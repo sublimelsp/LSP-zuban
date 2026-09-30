@@ -1,0 +1,26 @@
+[
+  {
+    "caption": "zuban: Settings",
+    "command": "edit_settings",
+    "args": {
+      "base_file": "${packages}/LSP-zuban/LSP-zuban.sublime-settings",
+      "default": "{\n\n}",
+    }
+  },
+  {
+    "caption": "zuban: check Current File",
+    "command": "zuban_current_file",
+  },
+  {
+    "caption": "zuban: check Open Files",
+    "command": "zuban_open_files",
+  },
+  {
+    "caption": "zuban: check Work-dir",
+    "command": "zuban_workdir",
+  },
+  {
+    "caption": "zuban: check Parent-dir",
+    "command": "zuban_parent_dir",
+  },
+]
