@@ -1,5 +1,5 @@
-import sublime  # type: ignore[import-not-found]
-import sublime_plugin  # type: ignore[import-not-found]
+import sublime
+import sublime_plugin
 
 from pathlib import Path
 from dataclasses import dataclass, field
@@ -21,18 +21,19 @@ class Settings:
 
     @classmethod
     def check_cmd(cls) -> Path:
-        return Path(cls.data.get('check', {}).get('cmd', 'zuban')).expanduser()
+        val: str = cls.data.get('check', {}).get('cmd', 'auto')  # type: ignore
+        return Path(val).expanduser()
 
     @classmethod
     def check_args(cls) -> list[str]:
-        return cls.data.get('check', {}).get('args', [])
+        return cls.data.get('check', {}).get('args', [])  # type: ignore
 
 
 #################################################
 # Helper
 #################################################
 
-def jump_to_line(view, line: int) -> None:
+def jump_to_line(view: 'sublime.View', line: int) -> None:
     ''' Jump to line in selected tab. '''
     pt = view.text_point(line - 1, 0)
     view.sel().clear()
@@ -40,10 +41,11 @@ def jump_to_line(view, line: int) -> None:
     view.show_at_center(pt)
 
 
-def is_py_tab(view) -> bool:
+def is_py_tab(view: 'sublime.View|None') -> bool:
     ''' Check if selected tab is a python file. '''
-    return view and view.settings().get('syntax', '').endswith(
-        'Python.sublime-syntax')
+    if not view:
+        return False
+    return view.settings().get('syntax', '').endswith('Python.sublime-syntax')  # type: ignore[union-attr]
 
 
 #################################################
@@ -91,7 +93,7 @@ class ZubanCheck:
             rv.append(Violation(desc, path, int(lineno)))
         return rv
 
-    def show(self, window) -> None:
+    def show(self, window: 'sublime.Window') -> None:
         ''' Run command and show results. '''
         try:
             ViolationResultsViewer(window, self.run())
@@ -101,7 +103,7 @@ class ZubanCheck:
 
 
 class ViolationResultsViewer:
-    def __init__(self, window, data: list[Violation]) -> None:
+    def __init__(self, window: sublime.Window, data: list[Violation]) -> None:
         self.window = window
         self.data = data
         self.calling_view = window.active_view()
@@ -120,7 +122,7 @@ class ViolationResultsViewer:
         self._restore_original()
 
     def _restore_original(self) -> None:
-        if self.calling_view.is_valid():
+        if self.calling_view and self.calling_view.is_valid():
             self.window.focus_view(self.calling_view)
 
     def show_file(self, path: Path, line: int, *, preview: bool) -> None:
@@ -138,8 +140,10 @@ class ViolationResultsViewer:
         return False
 
     def _open_new_file(self, path: Path, line: int, *, preview: bool) -> None:
-        view = self.window.open_file(
-            str(path), sublime.TRANSIENT if preview else 0)
+        if preview:
+            view = self.window.open_file(str(path), sublime.TRANSIENT)
+        else:
+            view = self.window.open_file(str(path))
 
         def jump() -> None:
             if view.is_valid():
@@ -177,9 +181,8 @@ class ZubanOpenFilesCommand(sublime_plugin.WindowCommand):
 
     def getPaths(self) -> list[str]:
         return [
-            tab.file_name()
-            for tab in sublime.active_window().views()
-            if tab.file_name() and is_py_tab(tab)
+            name for tab in sublime.active_window().views()
+            if (name := tab.file_name()) and is_py_tab(tab)
         ]
 
 
@@ -201,7 +204,7 @@ class ZubanParentDirCommand(sublime_plugin.WindowCommand):
             parents = list(Path(path).parents)
             self.window.show_quick_panel(
                 [x.as_posix() for x in parents],
-                lambda i: self.parent_selected(parents[i]) if i >= 0 else '',
+                lambda i: self.parent_selected(parents[i]) if i >= 0 else None,
             )
 
     def parent_selected(self, path: Path) -> None:
