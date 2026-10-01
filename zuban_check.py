@@ -17,16 +17,18 @@ from subprocess import run as shell  # noqa: S404
 @dataclass
 class Settings:
     ''' User settings manager '''
-    data = sublime.load_settings('LSP-zuban.sublime-settings')
+    @staticmethod
+    def all() -> 'sublime.Settings':
+        return sublime.load_settings('LSP-zuban.sublime-settings')
 
-    @classmethod
-    def check_cmd(cls) -> Path:
-        val: str = cls.data.get('check', {}).get('cmd', 'auto')  # type: ignore
+    @staticmethod
+    def check_cmd() -> Path:
+        val: str = Settings.all().get('check', {}).get('cmd', 'auto')  # type: ignore
         return Path(val).expanduser()
 
-    @classmethod
-    def check_args(cls) -> list[str]:
-        return cls.data.get('check', {}).get('args', [])  # type: ignore
+    @staticmethod
+    def check_args() -> list[str]:
+        return Settings.all().get('check', {}).get('args', [])  # type: ignore
 
 
 #################################################
