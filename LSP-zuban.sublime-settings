@@ -6,11 +6,16 @@
   "server_path": "auto",
 
   // LSP settings
+
+  // See comment for "server_path".
+  // If ready, enable this setting to run zuban globally.
+  // Alternatively, enable it on a per-project basis (Command Palette).
   "enabled": false,
   "command": ["${server_path}", "server"],
   "selector": "source.python",
 
   // manual check settings
+
   "check": {
     "args": [
       // "--python-version", "3.9",
