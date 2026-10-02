@@ -25,11 +25,15 @@ LSP-zuban: check Parent-dir
 ```
 
 Plus, a simple wrapper for the LSP server.
-You *could* also use this manual config without this plugin:
+You *could* also use this manual config without this plugin (see [zuban installation](https://docs.zubanls.com/en/latest/installation.html#sublime-text))
+:
 
 ```json
 "zuban": {
   "enabled": true,
+  // uv managed
+  "command": ["uvx", "zuban@latest", "server"],
+  // OR: manually
   "command": ["zuban", "server"],
   "selector": "source.python",
 }
