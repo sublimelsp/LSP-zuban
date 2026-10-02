@@ -1,6 +1,6 @@
 
 def reload_plugin() -> None:
-    import sys
+    import sys  # noqa: PLC0415
 
     # remove all previously loaded plugin modules
     p = f'{__package__}.'
@@ -10,4 +10,4 @@ def reload_plugin() -> None:
 
 reload_plugin()
 
-from .plugin import *  # type: ignore  # noqa
+from .plugin import *  # type: ignore[misc]  # noqa: E402, F403

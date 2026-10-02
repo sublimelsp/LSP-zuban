@@ -1,7 +1,7 @@
-import sublime
-
-from shutil import which
 from pathlib import Path
+from shutil import which
+
+import sublime
 
 try:
     from LSP.plugin import ST_STORAGE_PATH
@@ -18,12 +18,12 @@ else:
 
 
 def uv_binary() -> Path:
-    ''' Path to UV-managed zuban binary. '''
+    '''Path to UV-managed zuban binary.'''
     return Path(ST_STORAGE_PATH) / 'LSP-zuban' / '.venv' / BIN_DIR / EXE_NAME
 
 
 def resolve_zuban_path(val: str) -> Path:
-    ''' Resolve "auto" and "zuban" binary paths (mostly for `check`). '''
+    '''Resolve "auto" and "zuban" binary paths (mostly for `check`).'''
     if ST_STORAGE_PATH:
         if val == 'auto':
             # No need to check for exists, because "auto" is supposed to exist.

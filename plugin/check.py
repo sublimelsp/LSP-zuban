@@ -1,23 +1,17 @@
+from dataclasses import dataclass, field
+from pathlib import Path
+from subprocess import run as shell  # noqa: S404
+
 import sublime
 import sublime_plugin
 
-from pathlib import Path
-from dataclasses import dataclass, field
-from subprocess import run as shell  # noqa: S404
-
 from .utils import resolve_zuban_path
-
-# sublime.status_message('No errors')
-# self.window.run_command('exec', {
-#     'cmd': ['zuban', 'check', '.'],
-#     'working_dir': self.root,
-#     'quiet': True,
-# })
 
 
 @dataclass
 class Settings:
-    ''' User settings manager '''
+    '''User settings manager.'''
+
     @staticmethod
     def all() -> 'sublime.Settings':
         return sublime.load_settings('LSP-zuban.sublime-settings')
@@ -28,16 +22,24 @@ class Settings:
         return resolve_zuban_path(val)
 
     @staticmethod
-    def check_args() -> list[str]:
-        return Settings.all().get('check', {}).get('args', [])  # type: ignore
+    def check_args() -> 'list[str]':
+        return Settings.all().get('check', {}).get('args', [])  # type: ignore[union-attr, return-value]
 
 
 #################################################
 # Helper
 #################################################
 
+def get_open_py_files() -> 'list[str]':
+    '''Only the file names.'''
+    return [
+        name for tab in sublime.active_window().views()
+        if (name := tab.file_name()) and is_py_tab(tab)
+    ]
+
+
 def jump_to_line(view: 'sublime.View', line: int) -> None:
-    ''' Jump to line in selected tab. '''
+    '''Jump to line in selected tab.'''
     pt = view.text_point(line - 1, 0)
     view.sel().clear()
     view.sel().add(sublime.Region(pt, pt))
@@ -45,7 +47,7 @@ def jump_to_line(view: 'sublime.View', line: int) -> None:
 
 
 def is_py_tab(view: 'sublime.View|None') -> bool:
-    ''' Check if selected tab is a python file. '''
+    '''Check if selected tab is a python file.'''
     if not view:
         return False
     return view.settings().get('syntax', '').endswith('Python.sublime-syntax')  # type: ignore[union-attr]
@@ -64,15 +66,16 @@ class Violation:
 
 @dataclass
 class ZubanCheck:
-    ''' Parameters passed down to zuban check shell call. '''
-    files: list[Path] | list[str] = field(default_factory=lambda: ['.'])
-    cwd: Path | None = None
-    noName: bool = False
+    '''Parameters passed down to zuban check shell call.'''
 
-    def run(self) -> list[Violation]:
-        ''' Run `zuban check` '''
+    files: 'list[Path]|list[str]' = field(default_factory=lambda: ['.'])
+    cwd: 'Path|None' = None
+    no_name: bool = False
+
+    def run(self) -> 'list[Violation]':
+        '''Run `zuban check`.'''
         extra_args = Settings.check_args()
-        args = [Settings.check_cmd(), 'check'] + self.files + extra_args
+        args = [Settings.check_cmd(), 'check', *self.files, *extra_args]
         out = shell(args, capture_output=True, check=False, cwd=self.cwd)  # noqa: S603
         lines = out.stdout.decode('utf8').splitlines()
 
@@ -89,7 +92,7 @@ class ZubanCheck:
                 continue
             path = (root / fname).resolve()
 
-            if self.noName:
+            if self.no_name:
                 desc = f'L{lineno}:{remainder}'
             else:
                 desc = f'{path.name}:{lineno}:{remainder}'
@@ -97,16 +100,16 @@ class ZubanCheck:
         return rv
 
     def show(self, window: 'sublime.Window') -> None:
-        ''' Run command and show results. '''
+        '''Run command and show results.'''
         try:
             ViolationResultsViewer(window, self.run())
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             sublime.error_message(str(e))
             return
 
 
 class ViolationResultsViewer:
-    def __init__(self, window: sublime.Window, data: list[Violation]) -> None:
+    def __init__(self, window: 'sublime.Window', data: 'list[Violation]'):
         self.window = window
         self.data = data
         self.calling_view = window.active_view()
@@ -164,46 +167,40 @@ class ViolationResultsViewer:
 class ZubanCurrentFileCommand(sublime_plugin.WindowCommand):
     def run(self) -> None:
         # TODO: should we cwd to any `pyproject.toml` in a parent dir?
-        if path := self.getPath():
-            ZubanCheck([path], noName=True).show(self.window)
+        if path := self.get_path():
+            ZubanCheck([path], no_name=True).show(self.window)
 
     def is_enabled(self) -> bool:
-        return is_py_tab(self.window.active_view()) and bool(self.getPath())
+        return is_py_tab(self.window.active_view()) and bool(self.get_path())
 
-    def getPath(self) -> 'str|None':
+    def get_path(self) -> 'str|None':
         return self.window.extract_variables().get('file')
 
 
 class ZubanOpenFilesCommand(sublime_plugin.WindowCommand):
     def run(self) -> None:
-        if files := self.getPaths():
+        if files := get_open_py_files():
             ZubanCheck(files).show(self.window)
 
-    def is_enabled(self) -> bool:
-        return bool(self.getPaths())
-
-    def getPaths(self) -> list[str]:
-        return [
-            name for tab in sublime.active_window().views()
-            if (name := tab.file_name()) and is_py_tab(tab)
-        ]
+    def is_enabled(self) -> bool:  # noqa: PLR6301
+        return bool(get_open_py_files())
 
 
 class ZubanWorkdirCommand(sublime_plugin.WindowCommand):
     def run(self) -> None:
-        if root := self.getPath():
+        if root := self.get_path():
             ZubanCheck(cwd=Path(root)).show(self.window)
 
     def is_enabled(self) -> bool:
-        return bool(self.getPath())
+        return bool(self.get_path())
 
-    def getPath(self) -> 'str|None':
+    def get_path(self) -> 'str|None':
         return self.window.extract_variables().get('folder')
 
 
 class ZubanParentDirCommand(sublime_plugin.WindowCommand):
     def run(self) -> None:
-        if path := self.getPath():
+        if path := self.get_path():
             parents = list(Path(path).parents)
             self.window.show_quick_panel(
                 [x.as_posix() for x in parents],
@@ -214,7 +211,7 @@ class ZubanParentDirCommand(sublime_plugin.WindowCommand):
         ZubanCheck(cwd=path).show(self.window)
 
     def is_enabled(self) -> bool:
-        return bool(self.getPath())
+        return bool(self.get_path())
 
-    def getPath(self) -> 'str|None':
+    def get_path(self) -> 'str|None':
         return self.window.extract_variables().get('file')
