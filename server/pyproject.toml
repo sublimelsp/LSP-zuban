@@ -1,0 +1,7 @@
+[project]
+name = "lsp-zuban"
+version = "1.0"
+requires-python = ">=3.7"
+dependencies = [
+    "zuban==0.10.0"
+]

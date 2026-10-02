@@ -1,7 +1,13 @@
 {
+  // "auto" will automatically download newest zuban version via UV.
+  // You can provide a custom path to the zuban binary.
+  // This will prevent unnecessary web requests.
+  // If you set this before enabling the LSP, UV won't be used at all.
+  "server_path": "auto",
+
   // LSP settings
-  "enabled": true,
-  "command": ["zuban", "server"],
+  "enabled": false,
+  "command": ["${server_path}", "server"],
   "selector": "source.python",
 
   // manual check settings
