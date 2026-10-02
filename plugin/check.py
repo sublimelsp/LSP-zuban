@@ -5,7 +5,7 @@ from pathlib import Path
 from dataclasses import dataclass, field
 from subprocess import run as shell  # noqa: S404
 
-from .lib.utils import resolve_zuban_path
+from .utils import resolve_zuban_path
 
 # sublime.status_message('No errors')
 # self.window.run_command('exec', {

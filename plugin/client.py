@@ -2,7 +2,7 @@ from LSP.plugin import LspPlugin, OnPreStartContext
 from lsp_utils import UvVenvManager
 from sublime_lib import ResourcePath
 
-from .lib.utils import resolve_zuban_path, EXE_NAME
+from .utils import resolve_zuban_path, EXE_NAME
 
 
 class ZubanLSP(LspPlugin):
