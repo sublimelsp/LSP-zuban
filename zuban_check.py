@@ -5,6 +5,7 @@ from pathlib import Path
 from dataclasses import dataclass, field
 from subprocess import run as shell  # noqa: S404
 
+from .lib.utils import resolve_zuban_path
 
 # sublime.status_message('No errors')
 # self.window.run_command('exec', {
@@ -23,8 +24,8 @@ class Settings:
 
     @staticmethod
     def check_cmd() -> Path:
-        val: str = Settings.all().get('check', {}).get('cmd', 'auto')  # type: ignore
-        return Path(val).expanduser()
+        val: str = Settings.all().get('server_path', 'auto')  # type: ignore[assignment]
+        return resolve_zuban_path(val)
 
     @staticmethod
     def check_args() -> list[str]:

@@ -12,7 +12,6 @@
 
   // manual check settings
   "check": {
-    "cmd": "zuban",
     "args": [
       // "--python-version", "3.9",
     ],
