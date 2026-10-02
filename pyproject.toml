@@ -1,0 +1,7 @@
+[project.optional-dependencies]
+stubs = [
+  "sublime-text-stubs",
+]
+
+[tool.zuban]
+python_version = "3.8"
