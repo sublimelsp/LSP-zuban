@@ -4,7 +4,7 @@
     "command": "edit_settings",
     "args": {
       "base_file": "${packages}/LSP-zuban/LSP-zuban.sublime-settings",
-      "default": "{\n\n}",
+      "default": "{\n  $0\n}",
     }
   },
   {
