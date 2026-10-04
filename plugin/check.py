@@ -34,7 +34,7 @@ def get_open_py_files() -> 'list[str]':
     '''Only the file names.'''
     return [
         name for tab in sublime.active_window().views()
-        if (name := tab.file_name()) and is_py_tab(tab)
+        if (name := tab.file_name()) and is_py_tab(tab) and Path(name).exists
     ]
 
 
@@ -79,7 +79,8 @@ class ZubanCheck:
         out = shell(args, capture_output=True, check=False, cwd=self.cwd)  # noqa: S603
         lines = out.stdout.decode('utf8').splitlines()
         if not lines:
-            return [Violation('<zuban check return empty>')]
+            return [Violation(
+                'Error running zuban check. Report this issue on github.')]
 
         rv: list[Violation] = []
         if '--no-error-summary' in extra_args:
