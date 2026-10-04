@@ -79,8 +79,7 @@ class ZubanCheck:
         out = shell(args, capture_output=True, check=False, cwd=self.cwd)  # noqa: S603
         lines = out.stdout.decode('utf8').splitlines()
         if not lines:
-            return [Violation(
-                'Error running zuban check. Report this issue on github.')]
+            raise RuntimeError(b'ERROR: ' + out.stderr)
 
         rv: list[Violation] = []
         if '--no-error-summary' in extra_args:
