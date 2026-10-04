@@ -78,7 +78,12 @@ class ZubanCheck:
         args = [Settings.check_cmd(), 'check', *self.files, *extra_args]
         out = shell(args, capture_output=True, check=False, cwd=self.cwd)  # noqa: S603
         lines = out.stdout.decode('utf8').splitlines()
-        if not lines:
+        # no issues
+        if out.returncode == 0:
+            return list(map(Violation, lines)) or [Violation('no issues')]
+
+        # zuban uses return code 1 to indicate type issues
+        if out.returncode > 1:
             raise RuntimeError(b'ERROR: ' + out.stderr)
 
         rv: list[Violation] = []
