@@ -1,7 +1,5 @@
-[project.optional-dependencies]
-stubs = [
-  "sublime-text-stubs",
-]
+[dependency-groups]
+stubs = ["sublime-text-stubs"]
 
 [tool.ruff]
 line-length = 80
