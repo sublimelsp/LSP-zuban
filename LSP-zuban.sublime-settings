@@ -1,24 +1,23 @@
 {
-  // "auto" will automatically download newest zuban version via UV.
-  // You can provide a custom path to the zuban binary.
-  // This will prevent unnecessary web requests.
+  // See comment for "server_path".
+  // If ready, enable this setting to run zuban globally.
+  // Alternatively, enable it on a per-project basis.
+  "enabled": false,
+
+  // The path to the server binary to use for starting the language server.
+  // Use `auto` for the package to manage (install/update) server automatically.
+  // Note: Change this instead of directly updating `command` - the `${server_path}`
+  // variable is dynamically resolved based on this setting.
   // If you set this before enabling the LSP, UV won't be used at all.
   "server_path": "auto",
 
-  // LSP settings
-
-  // See comment for "server_path".
-  // If ready, enable this setting to run zuban globally.
-  // Alternatively, enable it on a per-project basis (Command Palette).
-  "enabled": false,
-  "command": ["${server_path}", "server"],
-  "selector": "source.python",
-
   // manual check settings
-
   "check": {
     "args": [
       // "--python-version", "3.9",
     ],
-  }
+  },
+
+  "command": ["${server_path}", "server"],
+  "selector": "source.python",
 }
