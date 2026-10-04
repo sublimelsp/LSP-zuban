@@ -1,5 +1,4 @@
 from pathlib import Path
-from shutil import which
 
 import sublime
 
@@ -24,15 +23,8 @@ def uv_binary() -> Path:
 
 def resolve_zuban_path(val: str) -> Path:
     '''Resolve "auto" and "zuban" binary paths (mostly for `check`).'''
-    if ST_STORAGE_PATH:
-        if val == 'auto':
-            # No need to check for exists, because "auto" is supposed to exist.
-            # If not, it should fail in the UI and notify user accordingly.
-            return uv_binary()
-        if val == EXE_NAME and not which(EXE_NAME):
-            exe = uv_binary()
-            if exe.is_file():
-                return exe
-    elif val == 'auto':
-        val = EXE_NAME
+    if val == 'auto':
+        # No need to check for exists, because "auto" is supposed to exist.
+        # If not, it should fail in the UI and notify user accordingly.
+        return uv_binary() if ST_STORAGE_PATH else Path(EXE_NAME)
     return Path(val).expanduser()
