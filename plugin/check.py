@@ -48,9 +48,9 @@ def jump_to_line(view: 'sublime.View', line: int) -> None:
 
 def is_py_tab(view: 'sublime.View|None') -> bool:
     '''Check if selected tab is a python file.'''
-    if not view:
+    if not view or not (syntax := view.syntax()):
         return False
-    return view.settings().get('syntax', '').endswith('Python.sublime-syntax')  # type: ignore[union-attr]
+    return syntax.scope == 'source.python'
 
 
 #################################################
