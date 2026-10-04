@@ -1,6 +1,6 @@
 [
   {
-    "caption": "LSP-zuban: Settings",
+    "caption": "Preferences: LSP-zuban Settings",
     "command": "edit_settings",
     "args": {
       "base_file": "${packages}/LSP-zuban/LSP-zuban.sublime-settings",
