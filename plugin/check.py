@@ -3,32 +3,12 @@ from pathlib import Path
 from subprocess import run as shell  # noqa: S404
 
 import sublime
-import sublime_plugin
-
-from .utils import resolve_zuban_path
-
-
-@dataclass
-class Settings:
-    '''User settings manager.'''
-
-    @staticmethod
-    def all() -> 'sublime.Settings':
-        return sublime.load_settings('LSP-zuban.sublime-settings')
-
-    @staticmethod
-    def check_cmd() -> Path:
-        val: str = Settings.all().get('server_path', 'auto')  # type: ignore[assignment]
-        return resolve_zuban_path(val)
-
-    @staticmethod
-    def check_args() -> 'list[str]':
-        return Settings.all().get('check', {}).get('args', [])  # type: ignore[union-attr, return-value]
-
+from LSP.plugin import LspWindowCommand, Session
 
 #################################################
 # Helper
 #################################################
+
 
 def get_open_py_files() -> 'list[str]':
     '''Only the file names.'''
@@ -72,10 +52,12 @@ class ZubanCheck:
     cwd: 'Path|None' = None
     no_name: bool = False
 
-    def run(self) -> 'list[Violation]':
-        '''Run `zuban check`.'''
-        extra_args = Settings.check_args()
-        args = [Settings.check_cmd(), 'check', *self.files, *extra_args]
+    def run(self, sess: Session) -> 'list[Violation]':
+        '''Run `zuban check`.'''  # noqa: DOC501
+        # TODO: try to avoid private variable
+        cmd = Path(sess._variables.get('server_path', 'zuban')).expanduser()
+        extra_args = sess.config.root_settings.get('check', {}).get('args', [])
+        args = [cmd, 'check', *self.files, *extra_args]
         out = shell(args, capture_output=True, check=False, cwd=self.cwd)  # noqa: S603
         lines = out.stdout.decode('utf8').splitlines()
         # no issues
@@ -106,10 +88,11 @@ class ZubanCheck:
             rv.append(Violation(desc, path, int(lineno)))
         return rv
 
-    def show(self, window: 'sublime.Window') -> None:
+    def show(self, win: LspWindowCommand) -> None:
         '''Run command and show results.'''
         try:
-            ViolationResultsViewer(window, self.run())
+            if sess := win.session():  # Command is only available with session
+                ViolationResultsViewer(win.window, self.run(sess))
         except Exception as e:  # noqa: BLE001
             sublime.error_message(str(e))
             return
@@ -171,41 +154,43 @@ class ViolationResultsViewer:
 # Register commands
 #################################################
 
-class ZubanCurrentFileCommand(sublime_plugin.WindowCommand):
+class ZubanCurrentFileCommand(LspWindowCommand):
     def run(self) -> None:
         # TODO: should we cwd to any `pyproject.toml` in a parent dir?
         if path := self.get_path():
-            ZubanCheck([path], no_name=True).show(self.window)
+            ZubanCheck([path], no_name=True).show(self)
 
     def is_enabled(self) -> bool:
-        return is_py_tab(self.window.active_view()) and bool(self.get_path())
+        return super().is_enabled() \
+            and is_py_tab(self.window.active_view()) \
+            and bool(self.get_path())
 
     def get_path(self) -> 'str|None':
         return self.window.extract_variables().get('file')
 
 
-class ZubanOpenFilesCommand(sublime_plugin.WindowCommand):
+class ZubanOpenFilesCommand(LspWindowCommand):
     def run(self) -> None:
         if files := get_open_py_files():
-            ZubanCheck(files).show(self.window)
-
-    def is_enabled(self) -> bool:  # noqa: PLR6301
-        return bool(get_open_py_files())
-
-
-class ZubanWorkdirCommand(sublime_plugin.WindowCommand):
-    def run(self) -> None:
-        if root := self.get_path():
-            ZubanCheck(cwd=Path(root)).show(self.window)
+            ZubanCheck(files).show(self)
 
     def is_enabled(self) -> bool:
-        return bool(self.get_path())
+        return super().is_enabled() and bool(get_open_py_files())
+
+
+class ZubanWorkdirCommand(LspWindowCommand):
+    def run(self) -> None:
+        if root := self.get_path():
+            ZubanCheck(cwd=Path(root)).show(self)
+
+    def is_enabled(self) -> bool:
+        return super().is_enabled() and bool(self.get_path())
 
     def get_path(self) -> 'str|None':
         return self.window.extract_variables().get('folder')
 
 
-class ZubanParentDirCommand(sublime_plugin.WindowCommand):
+class ZubanParentDirCommand(LspWindowCommand):
     def run(self) -> None:
         if path := self.get_path():
             parents = list(Path(path).parents)
@@ -215,10 +200,10 @@ class ZubanParentDirCommand(sublime_plugin.WindowCommand):
             )
 
     def parent_selected(self, path: Path) -> None:
-        ZubanCheck(cwd=path).show(self.window)
+        ZubanCheck(cwd=path).show(self)
 
     def is_enabled(self) -> bool:
-        return bool(self.get_path())
+        return super().is_enabled() and bool(self.get_path())
 
     def get_path(self) -> 'str|None':
         return self.window.extract_variables().get('file')
