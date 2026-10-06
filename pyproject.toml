@@ -1,0 +1,41 @@
+[dependency-groups]
+stubs = ["sublime-text-stubs"]
+
+[tool.ruff]
+line-length = 80
+target-version = "py38"
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+# Respect magic trailing commas.
+skip-magic-trailing-comma = false
+# Automatically detect the appropriate line ending.
+line-ending = "auto"
+
+[tool.ruff.lint]
+# Enable preview rules.
+preview = true
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+select = ["ALL"]
+# Refer to https://docs.astral.sh/ruff/rules/
+ignore = [
+  "ANN204",  # return type for __init__
+  "CPY001",  # missing-copyright-notice
+  "D10",  # missing doc-strings
+  "D200",  # unnecessary-multiline-docstring
+  "D205",  # missing-blank-line-after-summary
+  "D212",  # multi-line-summary-first-line
+  "D300",  # triple-single-quotes
+  "DOC201",  # require docstring return type
+  "DOC402",  # require docstring yield type
+  "Q00",  # bad quotes
+  "RUF105",  # noqa-comments
+  "SIM102",  # collapsible-if
+  "TD002",  # missing-todo-author
+  "TD003",  # missing-todo-link
+]
+
+[tool.zuban]
+python_version = "3.8"
