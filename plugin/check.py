@@ -115,7 +115,8 @@ class ViolationResultsViewer:
             if err.line >= 0:
                 self.show_file(err.fname, err.line, preview=preview)
                 return
-        self._restore_original()
+        if preview:
+            self._restore_original()
 
     def _restore_original(self) -> None:
         if self.calling_view and self.calling_view.is_valid():
