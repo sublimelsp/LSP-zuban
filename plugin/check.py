@@ -2,6 +2,7 @@ import subprocess  # noqa: S404
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 import sublime
 from LSP.plugin import LspWindowCommand, Session
@@ -34,7 +35,7 @@ def is_py_tab(view: 'sublime.View|None') -> bool:
     return syntax.scope == 'source.python'
 
 
-def win_startupinfo() -> None:
+def win_startupinfo() -> Any:  # noqa: ANN401
     '''Subprocess flags to start window hidden (Win only).'''
     if sys.platform == 'win32':
         startupinfo = subprocess.STARTUPINFO()
