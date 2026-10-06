@@ -1,6 +1,7 @@
+import subprocess  # noqa: S404
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from subprocess import run as shell  # noqa: S404
 
 import sublime
 from LSP.plugin import LspWindowCommand, Session
@@ -33,6 +34,16 @@ def is_py_tab(view: 'sublime.View|None') -> bool:
     return syntax.scope == 'source.python'
 
 
+def win_startupinfo() -> None:
+    '''Subprocess flags to start window hidden (Win only).'''
+    if sys.platform == 'win32':
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.SW_HIDE
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        return startupinfo
+    return None
+
+
 #################################################
 # zuban check
 #################################################
@@ -57,8 +68,9 @@ class ZubanCheck:
         # TODO: try to avoid private variable
         cmd = Path(sess._variables.get('server_path', 'zuban')).expanduser()
         extra_args = sess.config.root_settings.get('check', {}).get('args', [])
-        args = [cmd, 'check', *self.files, *extra_args]
-        out = shell(args, capture_output=True, check=False, cwd=self.cwd)  # noqa: S603
+        out = subprocess.run(  # noqa: S603
+            [cmd, 'check', *self.files, *extra_args], cwd=self.cwd,
+            capture_output=True, check=False, startupinfo=win_startupinfo())
         lines = out.stdout.decode('utf8').splitlines()
         # no issues
         if out.returncode == 0:
