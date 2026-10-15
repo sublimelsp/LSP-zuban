@@ -1,6 +1,3 @@
-LSP-zuban
----------
-
 IMPORTANT:
 - The server is currently disabled globally.
 
