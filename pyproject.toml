@@ -4,6 +4,8 @@ stubs = ["sublime-text-stubs"]
 [tool.ruff]
 line-length = 80
 target-version = "py38"
+# The smoke test fixture fails linting on purpose.
+extend-exclude = ["tests/smoke"]
 
 [tool.ruff.format]
 quote-style = "single"

@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/sublimelsp/lsp_smoke_test/v1/smoke.schema.json
+file: sample.py
+expected_diagnostics:
+  message: Incompatible types in assignment
+settings:
+  # The server is disabled by default.
+  LSP-zuban.sublime-settings:
+    enabled: true
