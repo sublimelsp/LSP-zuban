@@ -16,7 +16,7 @@ def get_open_py_files() -> 'list[str]':
     '''Only the file names.'''
     return [
         name for tab in sublime.active_window().views()
-        if (name := tab.file_name()) and is_py_tab(tab) and Path(name).exists
+        if (name := tab.file_name()) and is_py_tab(tab) and Path(name).exists()
     ]
 
 
